@@ -40,7 +40,12 @@ local heart1
 local heart2
 local heart3
 local heart4
+local loseBackground
 
+local dropSound
+local dropChannel
+local loseSound
+local loseChannel
 ---------------------------------------------------------------------------------------------------------------
 --LOCAL FUNCTIONS
 ---------------------------------------------------------------------------------------------------------------
@@ -106,9 +111,8 @@ local function NumericFieldListener (event)
             correctObject.isVisible = true
             timer.performWithDelay(2000, HideCorrect)
             --clear the text field
-
             event.target.text = ""
-
+            secondsLeft = totalSeconds
             points = points + 1 
             pointsObject.text = "Points =" ..points
         else 
@@ -136,15 +140,22 @@ local function UpdateTime( )
     	lives = lives - 1
 
     	--***IF THERE ARE NO LIVES LEFT, PLAY A LOSE SOUND, SHOW A YOU LOSE IMAGE
-    	--AND CANCEL TH TIMER REMOVE THE THIRD HEART BU MAKING IT INVISIBLE
+    	--AND CANCEL THe TIMER, REMOVE THE THIRD HEART BU MAKING IT INVISIBLE
     	if (lives==4) then
     		heart2.isVisible = false
+            dropChannel = audio.play(dropSound)
     	elseif (lives == 3) then
     		heart1.isVisible = false
+            dropChannel = audio.play(dropSound)
     	elseif (lives == 2) then
     		heart3.isVisible = false
+            dropChannel = audio.play(dropSound)
     	elseif (lives == 1) then
     		heart4.isVisible = false
+            dropChannel = audio.play(dropSound)
+            loseBackground.isVisible = true
+            loseChannel = audio.play(loseSound)
+            numericField.isVisible = false
     	end
 
     	--***CALL THE FUNCTION TO ASK A NEW QUESTION
@@ -205,6 +216,19 @@ heart4.y = display.contentHeight * 1 / 7
 --create the timer text
 clockText = display.newText("", 500, 600, nil, 150)
 clockText:setTextColor(255/255, 195/255, 0/255)
+
+--create the sound
+dropSound = audio.loadStream("Sounds/drop.mp3")
+
+--create the sound
+loseSound = audio.loadStream("Sounds/lose.mp3")
+
+--create the image
+loseBackground = display.newImageRect("Images/gameOver.png", display.contentWidth, display.contentHeight)
+loseBackground.anchorX = 0
+loseBackground.anchorY = 0
+loseBackground.isVisible = false
+
 --add the event listener to the numeric field
 numericField:addEventListener("userInput", NumericFieldListener)
 
