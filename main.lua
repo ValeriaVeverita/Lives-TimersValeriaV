@@ -30,12 +30,12 @@ local pointsObject
 local points = 0 
 
 --variables for the timer
-local totalSeconds = 5
-local secondsLeft = 5
+local totalSeconds = 10
+local secondsLeft = 10
 local clockText
 local countDownTimer
 
-local lives = 5
+local lives = 4
 local heart1
 local heart2
 local heart3
@@ -46,10 +46,35 @@ local dropSound
 local dropChannel
 local loseSound
 local loseChannel
+
 ---------------------------------------------------------------------------------------------------------------
 --LOCAL FUNCTIONS
 ---------------------------------------------------------------------------------------------------------------
-   
+
+local function ReplaceTimer()
+    secondsLeft = totalSeconds
+end
+
+local function UpdateHearts() 
+    if ( lives == 3 ) then
+      heart2.isVisible = false
+      dropChannel = audio.play(dropSound)
+    elseif ( lives == 2 ) then
+       heart1.isVisible = false
+       dropChannel = audio.play(dropSound)
+    elseif ( lives == 1 ) then
+       heart3.isVisible = false
+       dropChannel = audio.play(dropSound)
+    elseif ( lives == 0 ) then
+        heart4.isVisible = false
+        dropChannel = audio.play(dropSound)
+        loseBackground.isVisible = true
+        loseChannel = audio.play(loseSound)
+        numericField.isVisible = false  
+    end
+end
+ 
+
 local function AskQuestion()
 	-- generate 2 random numbers between a max amd a min number
 	randomNumber1 = math.random(0,10)
@@ -70,16 +95,17 @@ local function AskQuestion()
         	correctAnswer = randomNumber2 - randomNumber1
         	--create question in text object
         	questionObject.text = randomNumber2 .."-" .. randomNumber1 .. "="
-
         end
+
     elseif (randomOperator == 3) then
     	correctAnswer = randomNumber1 * randomNumber2 
     	--create qustion in text object
         questionObject.text = randomNumber1 .."*" .. randomNumber2 .. "="
     elseif (randomOperator == 4) then
-       correctAnswer = randomNumber1 / randomNumber2
+       correctAnswer = randomNumber1 * randomNumber2
        --create qustion in text object
-        questionObject.text = randomNumber1 .."/" .. randomNumber2 .. "="
+        questionObject.text = correctAnswer .."/" .. randomNumber2 .. "="
+        correctAnswer = randomNumber1
     end
 
 end
@@ -112,16 +138,17 @@ local function NumericFieldListener (event)
             timer.performWithDelay(2000, HideCorrect)
             --clear the text field
             event.target.text = ""
-            secondsLeft = totalSeconds
             points = points + 1 
             pointsObject.text = "Points =" ..points
+            timer.performWithDelay(2000, ReplaceTimer)
         else 
         	incorrectObject.isVisible = true
-        	timer.performWithDelay(2000, HideIncorrect)
+        	timer.performWithDelay(2500, HideIncorrect)
         	--clear the text field
         	event.target.text = ""
-
-        	
+            lives = lives - 1
+            UpdateHearts()
+             timer.performWithDelay(2500, ReplaceTimer)
         end
     end
 end
@@ -138,26 +165,7 @@ local function UpdateTime( )
     	--reset the number of seconds left
     	secondsLeft = totalSeconds
     	lives = lives - 1
-
-    	--***IF THERE ARE NO LIVES LEFT, PLAY A LOSE SOUND, SHOW A YOU LOSE IMAGE
-    	--AND CANCEL THe TIMER, REMOVE THE THIRD HEART BU MAKING IT INVISIBLE
-    	if (lives==4) then
-    		heart2.isVisible = false
-            dropChannel = audio.play(dropSound)
-    	elseif (lives == 3) then
-    		heart1.isVisible = false
-            dropChannel = audio.play(dropSound)
-    	elseif (lives == 2) then
-    		heart3.isVisible = false
-            dropChannel = audio.play(dropSound)
-    	elseif (lives == 1) then
-    		heart4.isVisible = false
-            dropChannel = audio.play(dropSound)
-            loseBackground.isVisible = true
-            loseChannel = audio.play(loseSound)
-            numericField.isVisible = false
-    	end
-
+        UpdateHearts()
     	--***CALL THE FUNCTION TO ASK A NEW QUESTION
     	AskQuestion()
     end
@@ -168,6 +176,7 @@ local function StartTimer()
 	--create a countdown timer that loops infinitely
 	countDownTimer = timer.performWithDelay( 1000, UpdateTime, 0)
 end
+
 ----------------------------------------------------------------------------------------------------
 --OBJECT CREATION
 -----------------------------------------------------------------------------------------------------
